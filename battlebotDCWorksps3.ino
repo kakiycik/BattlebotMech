@@ -22,10 +22,10 @@ int rightx;
 const int buzzerPin = 26; // Pin where the buzzer is connected
 const int ledPin = 27;   // Pin where the LED is connected
 
-const int motorPin1_m1 = 23;
-const int motorPin2_m1 = 22;
-const int motorPin1_m2 = 21;
-const int motorPin2_m2 = 19;
+const int motorPin1_m2 = 23;
+const int motorPin2_m2 = 22;
+const int motorPin1_m3 = 21;
+const int motorPin2_m3 = 19;
 
 const int motorPin1_m3 = 18; //weapon
 const int motorPin2_m3 = 17;
@@ -58,28 +58,70 @@ void notify() {
   //Serial.print(" - righty = ");
   //Serial.println(mappedRightY);
   ///
+  if(mappedRightx>40){
+      digitalWrite(motorPin1_m2, LOW);
+      analogWrite(motorPin2_m2, abs(mappedLeftY));
 
-  if(mappedLeftY>40){
-  digitalWrite(motorPin1_m1, LOW);
-  analogWrite(motorPin2_m1, abs(mappedLeftY));
+      digitalWrite(motorPin2_m3, LOW);
+      analogWrite(motorPin1_m3, abs(mappedLeftY));
 
+    }else if(mappedRightx<-40){
+      digitalWrite(motorPin2_m2, LOW);
+      analogWrite(motorPin1_m2, abs(mappedLeftY));
+
+      digitalWrite(motorPin1_m3, LOW);
+      analogWrite(motorPin2_m3, abs(mappedLeftY));
+  }
+
+  else if(mappedLeftY>40){
   digitalWrite(motorPin1_m2, LOW);
   analogWrite(motorPin2_m2, abs(mappedLeftY));
 
+  digitalWrite(motorPin1_m3, LOW);
+  analogWrite(motorPin2_m3, abs(mappedLeftY));
 
+    if(mappedRightx>40){
+      digitalWrite(motorPin1_m2, LOW);
+      analogWrite(motorPin2_m2, abs(mappedLeftY));
+
+      digitalWrite(motorPin2_m3, LOW);
+      analogWrite(motorPin1_m3, abs(mappedLeftY));
+
+    }else if(mappedRightx<-40){
+      digitalWrite(motorPin2_m2, LOW);
+      analogWrite(motorPin1_m2, abs(mappedLeftY));
+
+      digitalWrite(motorPin1_m3, LOW);
+      analogWrite(motorPin2_m3, abs(mappedLeftY));
+    }
 
   }else if (mappedLeftY<-40) {
-  digitalWrite(motorPin2_m1, LOW);
-  analogWrite(motorPin1_m1, abs(mappedLeftY));
-
   digitalWrite(motorPin2_m2, LOW);
   analogWrite(motorPin1_m2, abs(mappedLeftY));
 
+  digitalWrite(motorPin2_m3, LOW);
+  analogWrite(motorPin1_m3, abs(mappedLeftY));
+
+    if(mappedRightx>40){
+      digitalWrite(motorPin1_m2, LOW);
+      analogWrite(motorPin2_m2, abs(mappedLeftY));
+
+      digitalWrite(motorPin2_m3, LOW);
+      analogWrite(motorPin1_m3, abs(mappedLeftY));
+
+    }else if(mappedRightx<-40){
+      digitalWrite(motorPin2_m2, LOW);
+      analogWrite(motorPin1_m2, abs(mappedLeftY));
+
+      digitalWrite(motorPin1_m3, LOW);
+      analogWrite(motorPin2_m3, abs(mappedLeftY));
+    }
+
   }else {
-  digitalWrite(motorPin1_m1, LOW);
-  digitalWrite(motorPin2_m1, LOW);
   digitalWrite(motorPin1_m2, LOW);
   digitalWrite(motorPin2_m2, LOW);
+  digitalWrite(motorPin1_m3, LOW);
+  digitalWrite(motorPin2_m3, LOW);
   }
   // Map the readings between 0 and 180 and write them. With a deadband: check in monitor
 //////////////////
@@ -187,10 +229,10 @@ void setup() {
   // Initialize the pins
   pinMode(buzzerPin, OUTPUT);
   pinMode(ledPin, OUTPUT);
-  pinMode(motorPin1_m1, OUTPUT);
-  pinMode(motorPin2_m1, OUTPUT);
   pinMode(motorPin1_m2, OUTPUT);
   pinMode(motorPin2_m2, OUTPUT);
+  pinMode(motorPin1_m3, OUTPUT);
+  pinMode(motorPin2_m3, OUTPUT);
   pinMode(motorPin1_m3, OUTPUT);
   pinMode(motorPin2_m3, OUTPUT);
   pinMode(vpPin, INPUT);     // Set the VP pin as an input
