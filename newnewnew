@@ -1,7 +1,14 @@
-//#include "driver/ledc.h"
+//Wifi libraries 
+#include "arduino_secrets.h"
+#include "thingProperties.h"
+
+//Controller library
 #include <Ps3Controller.h>
+
+//Brushless library
 #include <ESP32Servo.h> // ESP32Servo library installed by Library Manager
-int Brushless_pin = 22;
+
+int Brushless_pin = 23;
 Servo ESC;
 
 // setting PWM properties
@@ -37,28 +44,26 @@ const int vpPin = 36;  // ADC pin
 unsigned long voltageDropStartTime = 0;  // Stores the time when voltage first drops below 11.7V
 bool voltageBelowThreshold = false;
 
+const int buzzerFrequency = 2000; // Frequency in Hz
+const int buzzerDuration = 500;   // Duration in ms
 // Callback Function
 void notify() {
    // Get Joystick value
-  
   leftY  = (Ps3.data.analog.stick.ly);
   rightx = (Ps3.data.analog.stick.rx);
 
-// take away mapping to just reading and change 80->40 and minus to plus
 // Map the values from -128 to 128 into the range of 0 to 255
   int mappedLeftY  = map(leftY, -128, 128, 257, -257);
   int mappedRightx = map(rightx, -128, 128, 257, -257);
   mappedLeftY  = constrain(mappedLeftY, -255, 255);
   mappedRightx = constrain(mappedRightx, -255, 255);
 
-  /*
+  /*  FOR TESTING
   Serial.print(" - leftY = ");
   Serial.println(mappedLeftY);
   Serial.print(" - right = ");
   Serial.println(mappedRightx);
 */
-
-
 
 if (mappedLeftY > 80) {
   digitalWrite(motorPin1_m2, LOW);
@@ -106,35 +111,29 @@ if (mappedLeftY >= -80 && mappedLeftY <= 80 && mappedRightx >= -80 && mappedRigh
 //////////////////////// WEAPON ///////////////////////////
 // Weapon start
     if (Ps3.event.button_down.cross) {
-     motorSpeed = 30;
+     motorSpeed = 100;
      ESC.write(motorSpeed);
-     //weapon_PWM = motorSpeed; //wifi
+     weapon_PWM = motorSpeed; //wifi
 
   }
 // Weapon start max
     if (Ps3.event.button_down.circle) { // spinning upwards
-    motorSpeed = 20;
+    motorSpeed = 60;
     ESC.write(motorSpeed);
-    //Serial.println("CROSS pressed");
-    //ledcWrite(motorPin1_m1, 0); // Set direction
-    //ledcWrite(motorPin2_m1, motorSpeed);
-    //weapon_PWM = motorSpeed; //wifi
+    weapon_PWM = motorSpeed; //wifi
   }
 
 // Weapon stop
   if (Ps3.event.button_down.square) {
-   // Serial.println("square pressed");
     motorSpeed = 0;
     ESC.write(motorSpeed);
-    //weapon_PWM = motorSpeed; //wifi
+    weapon_PWM = motorSpeed; //wifi
   }
 // Weapon stop
   if (Ps3.event.button_down.triangle) {
     motorSpeed = 0;
     ESC.write(motorSpeed);
-    //ledcWrite(motorPin1_m1, 0);  // Stop motor by setting both pins to LOW
-    //ledcWrite(motorPin2_m1, 0); // turn off
-    //weapon_PWM = motorSpeed; //wifi
+    weapon_PWM = motorSpeed; //wifi
   }
 ////////////////////////WEAPON
 
@@ -142,16 +141,15 @@ if (mappedLeftY >= -80 && mappedLeftY <= 80 && mappedRightx >= -80 && mappedRigh
 }
 
 // On Connection function
-void onConnect() { // fjerne?
+void onConnect() { 
 }
 
 
 void setup() {
-  // Initialize serial and wait for port to open:
   Serial.begin(115200);
   // This delay gives the chance to wait for a Serial Monitor without blocking if none is found
   delay(1500); 
-/*
+
   // Defined in thingProperties.h
   initProperties();
 
@@ -162,7 +160,6 @@ void setup() {
   setDebugMessageLevel(2);
   ArduinoCloud.printDebugInfo();
   delay(300);
-*/
 
   // Define Callback Function
   Ps3.attach(notify);
@@ -174,19 +171,13 @@ void setup() {
   // Initialize the pins
   pinMode(buzzerPin, OUTPUT); 
   pinMode(ledPin, OUTPUT);
-  //pinMode(motorPin1_m1, OUTPUT);
-  //pinMode(motorPin2_m1, OUTPUT);
   pinMode(motorPin1_m2, OUTPUT);
   pinMode(motorPin2_m2, OUTPUT);
   pinMode(motorPin1_m3, OUTPUT);
   pinMode(motorPin2_m3, OUTPUT);
   pinMode(vpPin, INPUT);     // Set the VP pin as an input 
 
-  
-  //ledcAttach(motorPin2_m1, freq, resolution);  // Initialize PWM channel to weapon
-  //ledcAttach(motorPin1_m1, freq, resolution);  // Initialize PWM channel to weapon
-  //ledcAttachPin(motorPin2_m1, 0);
-  //ledcSetup(0, freq, resolution);
+
     ESC.attach(Brushless_pin, 1000, 2000);  // Attach with pulse width for ESC range
 
     Serial.println("Arming ESC...");
@@ -199,15 +190,19 @@ void setup() {
 
     ESC.write(0);     // Stop motor
     Serial.println("Stopping motor.");
+    
+    delay(100);
+    tone(buzzerPin, buzzerFrequency, buzzerDuration);
   
 }
 
 void loop() {
-  //ArduinoCloud.update();
+  ArduinoCloud.update(); // sending values to wifi-display
   if (!Ps3.isConnected())
+    ESC.write(0);
     return;
   delay(200); // wass 2000
-  // Your code here 
+
  /// STOP EVRERYTHING WHEN BATTERY UNDER 11.7V /// /// ///
   voltage = analogRead(vpPin) * tune_A * (3.3/4095.0) *((R1+R2)/R2);
 
@@ -235,11 +230,10 @@ void loop() {
     // Reset the timer and flag if voltage goes above 11.7V
     voltageBelowThreshold = false;
   }
-
-
   /// STOP EVRERYTHING WHEN BATTERY UNDER 11.7V /// /// ///
 
-  //voltage_12V_Battery = voltage; // wifi
-  //Serial.println(voltage); // uncomment!
+
+  voltage_12V_Battery = voltage; // sent to wifi-display
+  //Serial.println(voltage); // for tuning
 
 }
